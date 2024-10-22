@@ -2,6 +2,9 @@ import Head from 'next/head';
 import { Footer } from '../../components/commons/Footer';
 import { Menu } from '../../components/commons/Menu';
 import { Box, Text, theme } from '../../theme/components';
+import { cmsService } from '../../infra/cms/cmsService';
+import { renderNodeRule, StructuredText } from 'react-datocms';
+import { isHeading } from 'datocms-structured-text-utils';
 
 export async function getStaticPaths() {
   return {
@@ -13,21 +16,29 @@ export async function getStaticPaths() {
   };
 }
 
-export function getStaticProps({ params }) {
+export async function getStaticProps({ params }) {
   const { id } = params;
+
+  const contentQuery = `
+    query {
+      contentFaqQuestion {
+        title
+        content {
+          value
+        }
+      }
+    }
+  `;
+
+  const { data } = await cmsService({
+    query: contentQuery
+  });
+
   return {
     props: {
       id,
-      title: 'Fake Title',
-      content: `
-        <h2>Primeiro Tópico</h2>
-        <p>paragrafo simples</p>
-        <p>outro paragrafo simples</p>
-        <ul>
-          <li>Item de lista 01</li>
-          <li>Item de lista 02</li>
-        </ul>
-      `,
+      title: data.contentFaqQuestion.title,
+      content: data.contentFaqQuestion.content,
     }
   }
 }
@@ -52,8 +63,7 @@ export default function FAQQuestionScreen({ title, content }) {
       >
         <Box
           styleSheet={{
-            display: 'flex',
-            gap: theme.space.x4,
+
             flexDirection: 'column',
             width: '100%',
             maxWidth: theme.space.xcontainer_lg,
@@ -64,7 +74,23 @@ export default function FAQQuestionScreen({ title, content }) {
             {title}
           </Text>
 
-          <Box dangerouslySetInnerHTML={{ __html: content }} />
+          <StructuredText
+            data={content}
+            customNodeRules={[
+              renderNodeRule(isHeading, ({ node, children, key }) => {
+                const tag = `h${node.level}`;
+                const variant = `heading${node.level}`;
+
+                console.log('node: ', node)
+
+                return (
+                  <Text tag={tag} variant={variant} key={key}>
+                    {children}
+                  </Text>
+                )
+              })
+            ]}
+          />
         </Box>
       </Box>
 
