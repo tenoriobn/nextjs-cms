@@ -16,7 +16,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params, preview }) {
   const { id } = params;
 
   const contentQuery = `
@@ -31,11 +31,13 @@ export async function getStaticProps({ params }) {
   `;
 
   const { data } = await cmsService({
-    query: contentQuery
+    query: contentQuery,
+    preview
   });
 
   return {
     props: {
+      cmsContent: data,
       id,
       title: data.contentFaqQuestion.title,
       content: data.contentFaqQuestion.content,
@@ -43,7 +45,9 @@ export async function getStaticProps({ params }) {
   }
 }
 
-export default function FAQQuestionScreen({ title, content }) {
+export default function FAQQuestionScreen({ cmsContent }) {
+  console.log('cmsContent: ', cmsContent.globalContent.globalFooter.description)
+
   return (
     <>
       <Head>
@@ -71,11 +75,11 @@ export default function FAQQuestionScreen({ title, content }) {
           }}
         >
           <Text tag="h1" variant="heading1">
-            {title}
+            {cmsContent.contentFaqQuestion.title}
           </Text>
 
           <StructuredText
-            data={content}
+            data={cmsContent.contentFaqQuestion.content}
             customNodeRules={[
               renderNodeRule(isHeading, ({ node, children, key }) => {
                 const tag = `h${node.level}`;
@@ -94,7 +98,7 @@ export default function FAQQuestionScreen({ title, content }) {
         </Box>
       </Box>
 
-      <Footer />
+      <Footer description={cmsContent.globalContent.globalFooter.description} />
     </>
   )
 }
