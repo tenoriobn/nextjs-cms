@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "datocms-structured-text-utils": "^4.0.1",
+    "lodash": "^4.17.21",
     "next": "^12.1.0",
     "react": "^17.0.2",
     "react-datocms": "^7.0.3",
