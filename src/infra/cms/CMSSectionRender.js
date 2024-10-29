@@ -2,12 +2,12 @@ import { cmsSections } from "../../components/cmsSections";
 import { getCMSContent } from "./CMSProvider"
 
 export function CMSSectionRender({ pageName }) {
-  console.log('pageName', pageName)
-
   const sections = getCMSContent(`${pageName}.pageContent[0].section`);
 
   return sections.map((sectionProps) => {
-    const Component = cmsSections[sectionProps.componentName]
+    const Component = cmsSections[sectionProps.componentName];
+
+    if(!Component) return null;
 
     return (
       <Component key={sectionProps.id} {...sectionProps} />
